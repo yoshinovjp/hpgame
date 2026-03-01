@@ -15,9 +15,7 @@
   LOSE: HP reaches 0
   STARS: 1★ 1-33 HP  |  2★ 34-66 HP  |  3★ 67-100 HP
 -->
-
 <!DOCTYPE html>
-
 <html lang="ja">
 <head>
   <meta charset="UTF-8"/>
@@ -108,26 +106,26 @@ window.confetti = (function(){
 /* ── RESET ──────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{
-font-family:var(–font);background:var(–bg);min-height:100vh;
-display:flex;flex-direction:column;align-items:center;overflow-x:hidden;
-background-image:
-radial-gradient(circle at 15% 15%,#ffe0e0 0%,transparent 45%),
-radial-gradient(circle at 85% 85%,#dceeff 0%,transparent 45%),
-radial-gradient(circle at 50% 55%,#fffde0 0%,transparent 60%);
+  font-family:var(--font);background:var(--bg);min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;overflow-x:hidden;
+  background-image:
+    radial-gradient(circle at 15% 15%,#ffe0e0 0%,transparent 45%),
+    radial-gradient(circle at 85% 85%,#dceeff 0%,transparent 45%),
+    radial-gradient(circle at 50% 55%,#fffde0 0%,transparent 60%);
 }
 
 /* ── SCREENS ────────────────────────────────────── */
 .screen{
-display:none;width:100%;max-width:520px;min-height:100vh;
-flex-direction:column;align-items:center;padding:16px 13px 28px;gap:11px;
+  display:none;width:100%;max-width:520px;min-height:100vh;
+  flex-direction:column;align-items:center;padding:16px 13px 28px;gap:11px;
 }
 .screen.active{display:flex}
 
 /* ── BUTTON BASE ────────────────────────────────── */
 .btn{
-border:none;border-radius:50px;font-family:var(–font);font-weight:800;
-cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;
-transition:transform .12s,box-shadow .12s;
+  border:none;border-radius:50px;font-family:var(--font);font-weight:800;
+  cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;
+  transition:transform .12s,box-shadow .12s;
 }
 .btn:active{transform:scale(0.92) translateY(2px)}
 
@@ -137,32 +135,32 @@ transition:transform .12s,box-shadow .12s;
 @keyframes sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
 .menu-title{font-size:clamp(24px,7.5vw,42px);font-weight:900;text-align:center;line-height:1.15}
 .menu-title .L{display:inline-block;animation:bobble 1.2s infinite alternate}
-.menu-title .L:nth-child(1){color:var(–primary);animation-delay:.00s}
-.menu-title .L:nth-child(2){color:var(–yellow); animation-delay:.08s}
-.menu-title .L:nth-child(3){color:var(–green);  animation-delay:.16s}
-.menu-title .L:nth-child(4){color:var(–blue);   animation-delay:.24s}
-.menu-title .L:nth-child(5){color:var(–purple); animation-delay:.32s}
-.menu-title .L:nth-child(6){color:var(–primary);animation-delay:.40s}
-.menu-title .L:nth-child(7){color:var(–yellow); animation-delay:.48s}
+.menu-title .L:nth-child(1){color:var(--primary);animation-delay:.00s}
+.menu-title .L:nth-child(2){color:var(--yellow); animation-delay:.08s}
+.menu-title .L:nth-child(3){color:var(--green);  animation-delay:.16s}
+.menu-title .L:nth-child(4){color:var(--blue);   animation-delay:.24s}
+.menu-title .L:nth-child(5){color:var(--purple); animation-delay:.32s}
+.menu-title .L:nth-child(6){color:var(--primary);animation-delay:.40s}
+.menu-title .L:nth-child(7){color:var(--yellow); animation-delay:.48s}
 @keyframes bobble{from{transform:translateY(0)}to{transform:translateY(-7px)}}
 .menu-sub{font-size:13px;color:#888;font-weight:700;letter-spacing:1px;text-align:center}
-.btn-mute{padding:10px 18px;font-size:18px;background:var(–yellow);color:var(–text);box-shadow:0 4px 0 #c8a800}
+.btn-mute{padding:10px 18px;font-size:18px;background:var(--yellow);color:var(--text);box-shadow:0 4px 0 #c8a800}
 .btn-mute.muted{background:#e0e0e0;box-shadow:0 4px 0 #aaa}
-.btn-start{padding:16px 46px;font-size:22px;background:var(–primary);color:white;box-shadow:0 6px 0 #cc4444;letter-spacing:1px}
+.btn-start{padding:16px 46px;font-size:22px;background:var(--primary);color:white;box-shadow:0 6px 0 #cc4444;letter-spacing:1px}
 .btn-start:active{box-shadow:0 2px 0 #cc4444;transform:translateY(4px) scale(.97)}
 .menu-howto{
-background:white;border-radius:16px;padding:14px 18px;
-font-size:13px;line-height:1.7;color:#555;font-weight:600;
-box-shadow:0 2px 10px var(–shadow);width:100%;max-width:340px;
+  background:white;border-radius:16px;padding:14px 18px;
+  font-size:13px;line-height:1.7;color:#555;font-weight:600;
+  box-shadow:0 2px 10px var(--shadow);width:100%;max-width:340px;
 }
-.menu-howto b{color:var(–primary)}
+.menu-howto b{color:var(--primary)}
 
 /* ══════════════ GAME HEADER ══════════════ */
 #screen-game{justify-content:flex-start;gap:7px}
 .game-header{width:100%;display:flex;align-items:center;justify-content:space-between;gap:6px}
-.btn-back{padding:8px 14px;font-size:16px;background:white;color:var(–text);border:2px solid #ddd;box-shadow:0 3px 0 #ddd}
+.btn-back{padding:8px 14px;font-size:16px;background:white;color:var(--text);border:2px solid #ddd;box-shadow:0 3px 0 #ddd}
 .hdr-center{display:flex;flex-direction:column;align-items:center;gap:2px}
-.match-counter{font-size:18px;font-weight:900;color:var(–primary)}
+.match-counter{font-size:18px;font-weight:900;color:var(--primary)}
 .match-label{font-size:10px;color:#aaa;font-weight:700;text-transform:uppercase;letter-spacing:1px}
 
 /* ══════════════ HP BAR ══════════════ */
@@ -172,15 +170,15 @@ box-shadow:0 2px 10px var(–shadow);width:100%;max-width:340px;
 /* Label row: dark pill badges like arcade UI */
 .hp-top-row{width:100%;display:flex;align-items:center;justify-content:space-between;padding:0 1px}
 .hp-label{
-font-size:10px;font-weight:900;color:#eee;letter-spacing:2px;text-transform:uppercase;
-background:#222;padding:2px 7px;border-radius:4px;
-border:2px solid #000;box-shadow:0 2px 0 #000;
+  font-size:10px;font-weight:900;color:#eee;letter-spacing:2px;text-transform:uppercase;
+  background:#222;padding:2px 7px;border-radius:4px;
+  border:2px solid #000;box-shadow:0 2px 0 #000;
 }
 .hp-number{
-font-size:13px;font-weight:900;color:#fff;letter-spacing:1px;
-background:#222;padding:2px 9px;border-radius:4px;
-border:2px solid #000;box-shadow:0 2px 0 #000;
-font-variant-numeric:tabular-nums;
+  font-size:13px;font-weight:900;color:#fff;letter-spacing:1px;
+  background:#222;padding:2px 9px;border-radius:4px;
+  border:2px solid #000;box-shadow:0 2px 0 #000;
+  font-variant-numeric:tabular-nums;
 }
 
 /* Hearts row — hidden, replaced by arcade bar */
@@ -189,117 +187,117 @@ font-variant-numeric:tabular-nums;
 
 /* Outer bezel — thick chunky arcade border */
 .hp-bar-wrap{
-width:100%;
-background:#000;
-border:3px solid #111;
-border-radius:5px;
-padding:3px;
-box-shadow:
-0 0 0 1px #666,
-0 4px 0 #000,
-inset 0 1px 3px rgba(0,0,0,.8);
-position:relative;
+  width:100%;
+  background:#000;
+  border:3px solid #111;
+  border-radius:5px;
+  padding:3px;
+  box-shadow:
+    0 0 0 1px #666,
+    0 4px 0 #000,
+    inset 0 1px 3px rgba(0,0,0,.8);
+  position:relative;
 }
 /* Inner dark track */
 .hp-bar-track{
-width:100%;height:20px;
-background:#1c0000;
-border-radius:2px;
-overflow:hidden;
-position:relative;
-/* faint inner shadow to look sunken */
-box-shadow:inset 0 2px 5px rgba(0,0,0,.7);
+  width:100%;height:20px;
+  background:#1c0000;
+  border-radius:2px;
+  overflow:hidden;
+  position:relative;
+  /* faint inner shadow to look sunken */
+  box-shadow:inset 0 2px 5px rgba(0,0,0,.7);
 }
 /* The fill bar itself */
 .hp-bar-fill{
-height:100%;
-width:100%;
-transition:width .3s ease, filter .3s ease;
-position:relative;
-/* Segmented: colour gradient + dark divider lines every 10% */
-background-color:#00e676;
-background-image:
-linear-gradient(180deg, rgba(255,255,255,.22) 0%, transparent 50%, rgba(0,0,0,.15) 100%),
-repeating-linear-gradient(
-90deg,
-transparent 0px, transparent calc(10% - 2px),
-rgba(0,0,0,.5) calc(10% - 2px), rgba(0,0,0,.5) 10%
-);
+  height:100%;
+  width:100%;
+  transition:width .3s ease, filter .3s ease;
+  position:relative;
+  /* Segmented: colour gradient + dark divider lines every 10% */
+  background-color:#00e676;
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,.22) 0%, transparent 50%, rgba(0,0,0,.15) 100%),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px, transparent calc(10% - 2px),
+      rgba(0,0,0,.5) calc(10% - 2px), rgba(0,0,0,.5) 10%
+    );
 }
 /* Scanline overlay */
 .hp-bar-fill::after{
-content:’’;position:absolute;inset:0;
-background:repeating-linear-gradient(
-180deg,
-rgba(255,255,255,.1) 0px, rgba(255,255,255,.1) 1px,
-transparent 1px, transparent 3px
-);
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(
+    180deg,
+    rgba(255,255,255,.1) 0px, rgba(255,255,255,.1) 1px,
+    transparent 1px, transparent 3px
+  );
 }
 /* Bright top shine */
 .hp-bar-fill::before{
-content:’’;position:absolute;
-top:1px;left:2px;right:2px;height:4px;
-background:rgba(255,255,255,.4);
-border-radius:2px;
+  content:'';position:absolute;
+  top:1px;left:2px;right:2px;height:4px;
+  background:rgba(255,255,255,.4);
+  border-radius:2px;
 }
 
 /* Colour states */
 .hp-bar-fill.high{ background-color:#00e676; }
 .hp-bar-fill.med{
-background-color:#ffd600;
-animation:hp-med-flicker 1.4s ease-in-out infinite alternate;
+  background-color:#ffd600;
+  animation:hp-med-flicker 1.4s ease-in-out infinite alternate;
 }
 .hp-bar-fill.low{
-background-color:#ff1744;
-animation:hp-low-flicker .55s ease-in-out infinite alternate;
+  background-color:#ff1744;
+  animation:hp-low-flicker .55s ease-in-out infinite alternate;
 }
 @keyframes hp-med-flicker{from{filter:brightness(1)}to{filter:brightness(1.18)}}
 @keyframes hp-low-flicker{from{filter:brightness(.85)}to{filter:brightness(1.35)}}
 
 /* ── Screen flash on damage ── */
 .damage-flash{
-position:fixed;inset:0;background:rgba(255,50,50,.28);
-pointer-events:none;z-index:999;opacity:0;
-transition:opacity .08s ease;
+  position:fixed;inset:0;background:rgba(255,50,50,.28);
+  pointer-events:none;z-index:999;opacity:0;
+  transition:opacity .08s ease;
 }
 .damage-flash.active{opacity:1}
 
 /* ══════════════ STREAK / STATUS ══════════════ */
 .status-row{
-width:100%;display:flex;align-items:center;justify-content:space-between;
-padding:0 2px;min-height:26px;
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:0 2px;min-height:26px;
 }
 .streak-display{
-display:flex;align-items:center;gap:4px;
-font-size:13px;font-weight:800;color:var(–orange);
-transition:opacity .2s;
+  display:flex;align-items:center;gap:4px;
+  font-size:13px;font-weight:800;color:var(--orange);
+  transition:opacity .2s;
 }
 .streak-display.hidden{opacity:0}
 .streak-flames{font-size:16px;letter-spacing:-2px}
 .streak-text{font-size:12px}
 
 .shield-badge{
-background:linear-gradient(135deg,var(–blue),var(–purple));
-color:white;padding:4px 10px;border-radius:20px;
-font-size:11px;font-weight:800;letter-spacing:.5px;
-display:none;animation:shield-glow 1.5s ease-in-out infinite alternate;
+  background:linear-gradient(135deg,var(--blue),var(--purple));
+  color:white;padding:4px 10px;border-radius:20px;
+  font-size:11px;font-weight:800;letter-spacing:.5px;
+  display:none;animation:shield-glow 1.5s ease-in-out infinite alternate;
 }
 .shield-badge.active{display:block}
 @keyframes shield-glow{
-from{box-shadow:0 0 6px rgba(77,150,255,.4)}
-to{box-shadow:0 0 14px rgba(77,150,255,.8)}
+  from{box-shadow:0 0 6px rgba(77,150,255,.4)}
+  to{box-shadow:0 0 14px rgba(77,150,255,.8)}
 }
 
 /* Float-up delta text */
 .hp-delta{
-position:fixed;font-size:22px;font-weight:900;pointer-events:none;
-z-index:1000;animation:float-up .9s ease forwards;
-text-shadow:0 2px 6px rgba(0,0,0,.18);
+  position:fixed;font-size:22px;font-weight:900;pointer-events:none;
+  z-index:1000;animation:float-up .9s ease forwards;
+  text-shadow:0 2px 6px rgba(0,0,0,.18);
 }
 @keyframes float-up{
-0%{opacity:1;transform:translateY(0) scale(1)}
-60%{opacity:1;transform:translateY(-40px) scale(1.1)}
-100%{opacity:0;transform:translateY(-70px) scale(.8)}
+  0%{opacity:1;transform:translateY(0) scale(1)}
+  60%{opacity:1;transform:translateY(-40px) scale(1.1)}
+  100%{opacity:0;transform:translateY(-70px) scale(.8)}
 }
 
 /* ══════════════ PROGRESS ══════════════ */
@@ -307,47 +305,47 @@ text-shadow:0 2px 6px rgba(0,0,0,.18);
 .progress-section{width:100%;display:flex;flex-direction:column;gap:3px}
 .progress-label-row{display:flex;align-items:center;justify-content:space-between;padding:0 2px}
 .progress-label{font-size:10px;font-weight:800;color:#aaa;letter-spacing:1.5px;text-transform:uppercase}
-.progress-count{font-size:11px;font-weight:900;color:var(–blue)}
+.progress-count{font-size:11px;font-weight:900;color:var(--blue)}
 
 .progress-wrap{
-width:100%;height:16px;
-background:#e8e8e8;
-border-radius:20px;
-border:2px solid #d0d0d0;
-box-shadow:inset 0 2px 5px rgba(0,0,0,.1);
-overflow:hidden;
-position:relative;
+  width:100%;height:16px;
+  background:#e8e8e8;
+  border-radius:20px;
+  border:2px solid #d0d0d0;
+  box-shadow:inset 0 2px 5px rgba(0,0,0,.1);
+  overflow:hidden;
+  position:relative;
 }
 .progress-fill{
-height:100%;width:0%;
-background:linear-gradient(90deg,#4d96ff,#c77dff);
-border-radius:20px;
-transition:width .5s cubic-bezier(.4,0,.2,1);
-position:relative;
+  height:100%;width:0%;
+  background:linear-gradient(90deg,#4d96ff,#c77dff);
+  border-radius:20px;
+  transition:width .5s cubic-bezier(.4,0,.2,1);
+  position:relative;
 }
 /* Glossy top shine */
 .progress-fill::after{
-content:’’;position:absolute;
-top:2px;left:6px;right:6px;height:5px;
-background:rgba(255,255,255,.55);
-border-radius:10px;
+  content:'';position:absolute;
+  top:2px;left:6px;right:6px;height:5px;
+  background:rgba(255,255,255,.55);
+  border-radius:10px;
 }
 
 /* Milestone dots beneath the bar */
 .progress-milestones{
-display:flex;justify-content:space-between;
-padding:0 6px;
+  display:flex;justify-content:space-between;
+  padding:0 6px;
 }
 .prog-dot{
-width:7px;height:7px;border-radius:50%;
-background:#ddd;border:2px solid #fff;
-box-shadow:0 1px 2px rgba(0,0,0,.15);
-transition:background .35s,transform .3s;
+  width:7px;height:7px;border-radius:50%;
+  background:#ddd;border:2px solid #fff;
+  box-shadow:0 1px 2px rgba(0,0,0,.15);
+  transition:background .35s,transform .3s;
 }
 .prog-dot.passed{
-background:var(–purple);
-box-shadow:0 0 5px rgba(199,125,255,.7);
-animation:dot-pop .35s cubic-bezier(.34,1.56,.64,1);
+  background:var(--purple);
+  box-shadow:0 0 5px rgba(199,125,255,.7);
+  animation:dot-pop .35s cubic-bezier(.34,1.56,.64,1);
 }
 @keyframes dot-pop{from{transform:scale(0)}to{transform:scale(1)}}
 
@@ -358,58 +356,58 @@ animation:dot-pop .35s cubic-bezier(.34,1.56,.64,1);
 
 /* ══════════════ CARD GRID ══════════════ */
 .card-grid{
-display:grid;grid-template-columns:repeat(4,var(–card-sz));
-gap:var(–gap);justify-content:center;
+  display:grid;grid-template-columns:repeat(4,var(--card-sz));
+  gap:var(--gap);justify-content:center;
 }
-.card{width:var(–card-sz);height:var(–card-sz);perspective:600px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.card{width:var(--card-sz);height:var(--card-sz);perspective:600px;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .card.matched{pointer-events:none}
 .card.locked{pointer-events:none;cursor:default}
 .card.hint-pulse .card-inner{animation:hint-pulse .65s ease-in-out 2}
 @keyframes hint-pulse{0%,100%{transform:rotateY(0) scale(1)}50%{transform:rotateY(0) scale(1.1)}}
 .card-inner{
-width:100%;height:100%;position:relative;transform-style:preserve-3d;
-border-radius:var(–r-card);transition:transform .45s cubic-bezier(.4,0,.2,1);
+  width:100%;height:100%;position:relative;transform-style:preserve-3d;
+  border-radius:var(--r-card);transition:transform .45s cubic-bezier(.4,0,.2,1);
 }
 .card-inner.flipped{transform:rotateY(180deg)}
 .card-face{
-position:absolute;inset:0;border-radius:var(–r-card);
-backface-visibility:hidden;-webkit-backface-visibility:hidden;
-display:flex;align-items:center;justify-content:center;
-box-shadow:0 4px 12px var(–shadow);user-select:none;
+  position:absolute;inset:0;border-radius:var(--r-card);
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 12px var(--shadow);user-select:none;
 }
 .card-back{
-background:var(–primary);
-background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.07) 0,rgba(255,255,255,.07) 2px,transparent 2px,transparent 10px);
-font-size:calc(var(–card-sz)*.44);
+  background:var(--primary);
+  background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.07) 0,rgba(255,255,255,.07) 2px,transparent 2px,transparent 10px);
+  font-size:calc(var(--card-sz)*.44);
 }
 .card-front{background:white;transform:rotateY(180deg);border:3px solid #f0f0f0}
-.card-front.is-emoji{font-size:calc(var(–card-sz)*.52)}
-.card-front.is-hiragana{font-size:calc(var(–card-sz)*.25);font-weight:900;color:var(–text);letter-spacing:1px;text-align:center;padding:4px}
-.card.matched .card-front{background:#d4f8d4;border-color:var(–green)}
+.card-front.is-emoji{font-size:calc(var(--card-sz)*.52)}
+.card-front.is-hiragana{font-size:calc(var(--card-sz)*.25);font-weight:900;color:var(--text);letter-spacing:1px;text-align:center;padding:4px}
+.card.matched .card-front{background:#d4f8d4;border-color:var(--green)}
 .card.shake .card-inner{animation:shake .42s ease}
 @keyframes shake{0%,100%{transform:rotateY(180deg) translateX(0)}25%{transform:rotateY(180deg) translateX(-7px)}75%{transform:rotateY(180deg) translateX(7px)}}
 
 /* ══════════════ QUIZ PANEL ══════════════ */
 .quiz-panel{
-width:100%;display:flex;flex-direction:column;align-items:center;gap:8px;
-opacity:0;transform:translateY(14px);
-transition:opacity .22s ease,transform .22s ease;
-pointer-events:none;
+  width:100%;display:flex;flex-direction:column;align-items:center;gap:8px;
+  opacity:0;transform:translateY(14px);
+  transition:opacity .22s ease,transform .22s ease;
+  pointer-events:none;
 }
 .quiz-panel.visible{opacity:1;transform:translateY(0);pointer-events:auto}
 .quiz-prompt{font-size:14px;font-weight:800;color:#777;text-align:center;letter-spacing:.5px}
 .quiz-choices{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
 .btn-choice{
-padding:15px 26px;font-size:20px;font-weight:900;
-background:white;color:var(–text);
-border:3px solid #ddd;box-shadow:0 5px 0 #ccc;border-radius:16px;
-min-width:118px;text-align:center;
-transition:transform .12s,box-shadow .12s,background .15s,border-color .15s;
+  padding:15px 26px;font-size:20px;font-weight:900;
+  background:white;color:var(--text);
+  border:3px solid #ddd;box-shadow:0 5px 0 #ccc;border-radius:16px;
+  min-width:118px;text-align:center;
+  transition:transform .12s,box-shadow .12s,background .15s,border-color .15s;
 }
 .btn-choice:active{transform:translateY(4px) scale(.95);box-shadow:0 1px 0 #ccc}
 .btn-choice:disabled{cursor:default}
-.btn-choice.correct{background:#d4f8d4;border-color:var(–green);box-shadow:0 5px 0 #45a355;animation:bounce-correct .38s cubic-bezier(.34,1.56,.64,1)}
-.btn-choice.wrong{background:#ffd6d6;border-color:var(–primary);box-shadow:0 5px 0 #cc4444;animation:wobble-wrong .38s ease}
+.btn-choice.correct{background:#d4f8d4;border-color:var(--green);box-shadow:0 5px 0 #45a355;animation:bounce-correct .38s cubic-bezier(.34,1.56,.64,1)}
+.btn-choice.wrong{background:#ffd6d6;border-color:var(--primary);box-shadow:0 5px 0 #cc4444;animation:wobble-wrong .38s ease}
 @keyframes bounce-correct{0%{transform:scale(1)}50%{transform:scale(1.13)}100%{transform:scale(1)}}
 @keyframes wobble-wrong{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 /* One-chance: after answer both buttons locked */
@@ -417,59 +415,56 @@ transition:transform .12s,box-shadow .12s,background .15s,border-color .15s;
 
 /* ══════════════ WIN SCREEN ══════════════ */
 #screen-win{justify-content:center;gap:16px;text-align:center}
-.win-title{font-size:clamp(36px,11vw,64px);font-weight:900;color:var(–primary);animation:wiggle .5s ease infinite alternate}
+.win-title{font-size:clamp(36px,11vw,64px);font-weight:900;color:var(--primary);animation:wiggle .5s ease infinite alternate}
 @keyframes wiggle{from{transform:rotate(-3deg)}to{transform:rotate(3deg)}}
 .win-emoji-row{font-size:36px;letter-spacing:8px;animation:sway 2s ease-in-out infinite}
-.win-sub{font-size:18px;color:var(–text);font-weight:700}
+.win-sub{font-size:18px;color:var(--text);font-weight:700}
 .stars-row{display:flex;gap:8px;justify-content:center;font-size:44px}
 .star{opacity:.2;transition:opacity .4s,transform .4s;display:inline-block}
 .star.lit{opacity:1;animation:star-pop .5s cubic-bezier(.34,1.56,.64,1) both}
 @keyframes star-pop{from{transform:scale(0) rotate(-30deg)}to{transform:scale(1) rotate(0)}}
 .win-stats{
-background:white;border-radius:16px;padding:14px 20px;
-box-shadow:0 4px 14px var(–shadow);font-size:14px;
-display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;
-text-align:left;width:100%;max-width:300px;
+  background:white;border-radius:16px;padding:14px 20px;
+  box-shadow:0 4px 14px var(--shadow);font-size:14px;
+  display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;
+  text-align:left;width:100%;max-width:300px;
 }
 .stat-item{display:flex;flex-direction:column;gap:1px}
 .stat-label{font-size:10px;color:#aaa;font-weight:700;text-transform:uppercase;letter-spacing:1px}
-.stat-val{font-size:18px;font-weight:900;color:var(–text)}
-.stat-val.good{color:var(–green)}
-.stat-val.bad{color:var(–primary)}
-.btn-retry{padding:14px 36px;font-size:18px;background:var(–green);color:white;box-shadow:0 5px 0 #45a355}
-.btn-menu-win{padding:12px 32px;font-size:16px;background:white;color:var(–text);border:2px solid #ddd;box-shadow:0 4px 0 #ddd}
+.stat-val{font-size:18px;font-weight:900;color:var(--text)}
+.stat-val.good{color:var(--green)}
+.stat-val.bad{color:var(--primary)}
+.btn-retry{padding:14px 36px;font-size:18px;background:var(--green);color:white;box-shadow:0 5px 0 #45a355}
+.btn-menu-win{padding:12px 32px;font-size:16px;background:white;color:var(--text);border:2px solid #ddd;box-shadow:0 4px 0 #ddd}
 
 /* ══════════════ GAME OVER SCREEN ══════════════ */
 #screen-over{justify-content:center;gap:16px;text-align:center}
-.over-title{font-size:clamp(32px,10vw,58px);font-weight:900;color:var(–primary);animation:shake-title .6s ease infinite alternate}
+.over-title{font-size:clamp(32px,10vw,58px);font-weight:900;color:var(--primary);animation:shake-title .6s ease infinite alternate}
 @keyframes shake-title{from{transform:rotate(-2deg)}to{transform:rotate(2deg)}}
 .over-sub{font-size:17px;color:#555;font-weight:700}
 .over-stats{
-background:white;border-radius:16px;padding:14px 20px;
-box-shadow:0 4px 14px var(–shadow);font-size:14px;
-display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;
-text-align:left;width:100%;max-width:300px;
+  background:white;border-radius:16px;padding:14px 20px;
+  box-shadow:0 4px 14px var(--shadow);font-size:14px;
+  display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;
+  text-align:left;width:100%;max-width:300px;
 }
-.btn-tryagain{padding:14px 36px;font-size:18px;background:var(–primary);color:white;box-shadow:0 5px 0 #cc4444}
+.btn-tryagain{padding:14px 36px;font-size:18px;background:var(--primary);color:white;box-shadow:0 5px 0 #cc4444}
 .btn-tryagain:active{box-shadow:0 2px 0 #cc4444;transform:translateY(3px) scale(.97)}
-.btn-menu-over{padding:12px 32px;font-size:16px;background:white;color:var(–text);border:2px solid #ddd;box-shadow:0 4px 0 #ddd}
+.btn-menu-over{padding:12px 32px;font-size:16px;background:white;color:var(--text);border:2px solid #ddd;box-shadow:0 4px 0 #ddd}
 
 /* ══════════════ UTILS ══════════════ */
 .hidden{display:none!important}
-@media(max-width:380px){:root{–card-sz:min(21vw,76px)}}
-@media(min-width:480px){:root{–card-sz:100px;–gap:10px}}
+@media(max-width:380px){:root{--card-sz:min(21vw,76px)}}
+@media(min-width:480px){:root{--card-sz:100px;--gap:10px}}
 .skull-emoji{font-size:64px}
-</style>
-
+  </style>
 </head>
 <body>
 
 <!-- damage flash overlay -->
-
 <div class="damage-flash" id="damage-flash"></div>
 
 <!-- ═══════════ MENU ═══════════ -->
-
 <div id="screen-menu" class="screen active">
   <div class="menu-emoji-row">🍎🍌🍒🍇🍋🍈🍑🍓</div>
   <div class="menu-title">
@@ -489,7 +484,6 @@ text-align:left;width:100%;max-width:300px;
 </div>
 
 <!-- ═══════════ GAME ═══════════ -->
-
 <div id="screen-game" class="screen">
   <div class="game-header">
     <button class="btn btn-back" id="btn-back">← メニュー</button>
@@ -501,7 +495,6 @@ text-align:left;width:100%;max-width:300px;
   </div>
 
   <!-- HP display -->
-
   <div class="hp-section">
     <div class="hp-top-row">
       <div class="hp-label">❤️ HP</div>
@@ -516,7 +509,6 @@ text-align:left;width:100%;max-width:300px;
   </div>
 
   <!-- streak + shield row -->
-
   <div class="status-row">
     <div class="streak-display hidden" id="streak-display">
       <span class="streak-flames" id="streak-flames">🔥</span>
@@ -549,7 +541,6 @@ text-align:left;width:100%;max-width:300px;
 </div>
 
 <!-- ═══════════ WIN ═══════════ -->
-
 <div id="screen-win" class="screen">
   <div class="win-title">やったね！🎉</div>
   <div class="win-emoji-row">🍎🍌🍒🍇🍋🍈🍑🍓</div>
@@ -565,7 +556,6 @@ text-align:left;width:100%;max-width:300px;
 </div>
 
 <!-- ═══════════ GAME OVER ═══════════ -->
-
 <div id="screen-over" class="screen">
   <div id="skull-emoji" class="skull-emoji">💀</div>
   <div class="over-title">ゲームオーバー</div>
@@ -1242,6 +1232,5 @@ document.addEventListener('DOMContentLoaded', function() {
   if (btnMenuOver) btnMenuOver.addEventListener('click', function(){ Controller.goToMenu(); });
 });
 </script>
-
 </body>
 </html>
