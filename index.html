@@ -458,6 +458,7 @@ text-align:left;width:100%;max-width:300px;
 .hidden{display:none!important}
 @media(max-width:380px){:root{–card-sz:min(21vw,76px)}}
 @media(min-width:480px){:root{–card-sz:100px;–gap:10px}}
+.skull-emoji{font-size:64px}
 </style>
 
 </head>
@@ -483,20 +484,20 @@ text-align:left;width:100%;max-width:300px;
     🔥 れんぞく正解でボーナス回復！<br>
     💔 HP0でゲームオーバー
   </div>
-  <button class="btn btn-mute" id="btn-mute-menu" onclick="Controller.toggleMute()">🔊 おと ON</button>
-  <button class="btn btn-start" onclick="Controller.startGame()">▶ スタート！</button>
+  <button class="btn btn-mute" id="btn-mute-menu">🔊 おと ON</button>
+  <button class="btn btn-start" id="btn-start">▶ スタート！</button>
 </div>
 
 <!-- ═══════════ GAME ═══════════ -->
 
 <div id="screen-game" class="screen">
   <div class="game-header">
-    <button class="btn btn-back" onclick="Controller.goToMenu()">← メニュー</button>
+    <button class="btn btn-back" id="btn-back">← メニュー</button>
     <div class="hdr-center">
       <div class="match-counter" id="match-counter">0 / 8</div>
       <div class="match-label">マッチ</div>
     </div>
-    <button class="btn btn-mute" id="btn-mute-game" onclick="Controller.toggleMute()">🔊</button>
+    <button class="btn btn-mute" id="btn-mute-game">🔊</button>
   </div>
 
   <!-- HP display -->
@@ -541,8 +542,8 @@ text-align:left;width:100%;max-width:300px;
   <div class="quiz-panel" id="quiz-panel">
     <div class="quiz-prompt">えいごでなんていう？ 👇 （1かいだけ！）</div>
     <div class="quiz-choices">
-      <button class="btn btn-choice" id="choice-a" onclick="Controller.handleChoice('a')"></button>
-      <button class="btn btn-choice" id="choice-b" onclick="Controller.handleChoice('b')"></button>
+      <button class="btn btn-choice" id="choice-a"></button>
+      <button class="btn btn-choice" id="choice-b"></button>
     </div>
   </div>
 </div>
@@ -559,19 +560,19 @@ text-align:left;width:100%;max-width:300px;
     <span class="star" id="star3">⭐</span>
   </div>
   <div class="win-stats" id="win-stats"></div>
-  <button class="btn btn-retry"    onclick="Controller.startGame()">🔄 もういちど</button>
-  <button class="btn btn-menu-win" onclick="Controller.goToMenu()">🏠 メニューへ</button>
+  <button class="btn btn-retry"    id="btn-retry">🔄 もういちど</button>
+  <button class="btn btn-menu-win" id="btn-menu-win">🏠 メニューへ</button>
 </div>
 
 <!-- ═══════════ GAME OVER ═══════════ -->
 
 <div id="screen-over" class="screen">
-  <div style="font-size:64px">💀</div>
+  <div id="skull-emoji" class="skull-emoji">💀</div>
   <div class="over-title">ゲームオーバー</div>
   <div class="over-sub" id="over-sub">HPが0になったよ… またチャレンジ！</div>
   <div class="over-stats" id="over-stats"></div>
-  <button class="btn btn-tryagain"  onclick="Controller.startGame()">🔄 もういちど！</button>
-  <button class="btn btn-menu-over" onclick="Controller.goToMenu()">🏠 メニューへ</button>
+  <button class="btn btn-tryagain"  id="btn-tryagain">🔄 もういちど！</button>
+  <button class="btn btn-menu-over" id="btn-menu-over">🏠 メニューへ</button>
 </div>
 
 <script>
@@ -1206,8 +1207,39 @@ const Controller = (() => {
 /* ═══════════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════════ */
-window.addEventListener('DOMContentLoaded',()=>{
+/* ── Wire up all button events (no inline onclick — CSP safe) ── */
+document.addEventListener('DOMContentLoaded', function() {
   View.updateMuteButtons(Model.isMuted());
+
+  // Menu
+  var btnStart    = document.getElementById('btn-start');
+  var btnMuteMenu = document.getElementById('btn-mute-menu');
+  if (btnStart)    btnStart.addEventListener('click', function(){ Controller.startGame(); });
+  if (btnMuteMenu) btnMuteMenu.addEventListener('click', function(){ Controller.toggleMute(); });
+
+  // Game header
+  var btnBack     = document.getElementById('btn-back');
+  var btnMuteGame = document.getElementById('btn-mute-game');
+  if (btnBack)     btnBack.addEventListener('click', function(){ Controller.goToMenu(); });
+  if (btnMuteGame) btnMuteGame.addEventListener('click', function(){ Controller.toggleMute(); });
+
+  // Quiz choices
+  var choiceA = document.getElementById('choice-a');
+  var choiceB = document.getElementById('choice-b');
+  if (choiceA) choiceA.addEventListener('click', function(){ Controller.handleChoice('a'); });
+  if (choiceB) choiceB.addEventListener('click', function(){ Controller.handleChoice('b'); });
+
+  // Win screen
+  var btnRetry   = document.getElementById('btn-retry');
+  var btnMenuWin = document.getElementById('btn-menu-win');
+  if (btnRetry)   btnRetry.addEventListener('click', function(){ Controller.startGame(); });
+  if (btnMenuWin) btnMenuWin.addEventListener('click', function(){ Controller.goToMenu(); });
+
+  // Game over screen
+  var btnTryAgain  = document.getElementById('btn-tryagain');
+  var btnMenuOver  = document.getElementById('btn-menu-over');
+  if (btnTryAgain) btnTryAgain.addEventListener('click', function(){ Controller.startGame(); });
+  if (btnMenuOver) btnMenuOver.addEventListener('click', function(){ Controller.goToMenu(); });
 });
 </script>
 
