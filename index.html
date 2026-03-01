@@ -1,0 +1,1215 @@
+<!--
+  English Fruit Memory — RPG Edition
+  =====================================
+  Solo only. Match emoji+hiragana pairs while keeping your HP alive.
+
+  HP SYSTEM:
+  - Start: 100 HP (10 hearts)
+  - Wrong word:  streak 1→-12, streak 2→-18, streak 3+→-25
+  - Mismatch:    -8 HP flat
+  - Correct word: streak 1→+3, 2→+5, 3+→+8, 5+→+12 (capped 100)
+  - Pair match bonus: +5 HP
+  - Shield: earned on clean turn (right word + pair match); absorbs next mismatch
+
+  WIN:  Clear all 8 pairs with HP > 0
+  LOSE: HP reaches 0
+  STARS: 1★ 1-33 HP  |  2★ 34-66 HP  |  3★ 67-100 HP
+-->
+
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
+  <title>🍎 Fruit Memory RPG!</title>
+  <script>
+/* ── Minimal inline confetti (no CDN needed) ── */
+window.confetti = (function(){
+  let canvas, ctx, particles = [], animId = null;
+  function init() {
+    if (canvas) return;
+    canvas = document.createElement('canvas');
+    canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999';
+    document.body.appendChild(canvas);
+    ctx = canvas.getContext('2d');
+    resize();
+    window.addEventListener('resize', resize);
+  }
+  function resize() {
+    if (!canvas) return;
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  function randomBetween(a, b) { return a + Math.random() * (b - a); }
+  function launch(opts) {
+    init();
+    const count    = opts.particleCount || 60;
+    const spread   = (opts.spread || 70) * Math.PI / 180;
+    const origin   = opts.origin || {x: 0.5, y: 0.5};
+    const colors   = opts.colors || ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#c77dff'];
+    const angle    = ((opts.angle || 90) - 90) * Math.PI / 180;
+    const ox = canvas.width  * (origin.x !== undefined ? origin.x : 0.5);
+    const oy = canvas.height * (origin.y !== undefined ? origin.y : 0.5);
+    for (let i = 0; i < count; i++) {
+      const a = angle + randomBetween(-spread/2, spread/2);
+      const spd = randomBetween(4, 10);
+      particles.push({
+        x: ox, y: oy,
+        vx: Math.cos(a) * spd,
+        vy: Math.sin(a) * spd - randomBetween(2, 6),
+        color: colors[Math.floor(Math.random() * colors.length)],
+        w: randomBetween(7, 13), h: randomBetween(4, 8),
+        rot: randomBetween(0, Math.PI*2),
+        rotV: randomBetween(-0.2, 0.2),
+        gravity: randomBetween(0.15, 0.3),
+        life: 1, decay: randomBetween(0.012, 0.022),
+      });
+    }
+    if (!animId) loop();
+  }
+  function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles = particles.filter(p => p.life > 0);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.vy += p.gravity;
+      p.vx *= 0.99; p.rot += p.rotV; p.life -= p.decay;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+      ctx.restore();
+    });
+    if (particles.length > 0) { animId = requestAnimationFrame(loop); }
+    else { animId = null; ctx.clearRect(0,0,canvas.width,canvas.height); }
+  }
+  return launch;
+})();
+  </script>
+  <style>
+/* ── VARIABLES ─────────────────────────────────── */
+:root {
+  --bg:      #fff9f0;
+  --primary: #ff6b6b;
+  --yellow:  #ffd93d;
+  --green:   #6bcb77;
+  --blue:    #4d96ff;
+  --purple:  #c77dff;
+  --orange:  #ff9a3c;
+  --text:    #2d2d2d;
+  --shadow:  rgba(0,0,0,0.13);
+  --card-sz: min(19vw,90px);
+  --gap:     min(2vw,9px);
+  --r-card:  16px;
+  --font:    'Nunito','Comic Sans MS',cursive,sans-serif;
+}
+
+/* ── RESET ──────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+font-family:var(–font);background:var(–bg);min-height:100vh;
+display:flex;flex-direction:column;align-items:center;overflow-x:hidden;
+background-image:
+radial-gradient(circle at 15% 15%,#ffe0e0 0%,transparent 45%),
+radial-gradient(circle at 85% 85%,#dceeff 0%,transparent 45%),
+radial-gradient(circle at 50% 55%,#fffde0 0%,transparent 60%);
+}
+
+/* ── SCREENS ────────────────────────────────────── */
+.screen{
+display:none;width:100%;max-width:520px;min-height:100vh;
+flex-direction:column;align-items:center;padding:16px 13px 28px;gap:11px;
+}
+.screen.active{display:flex}
+
+/* ── BUTTON BASE ────────────────────────────────── */
+.btn{
+border:none;border-radius:50px;font-family:var(–font);font-weight:800;
+cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;
+transition:transform .12s,box-shadow .12s;
+}
+.btn:active{transform:scale(0.92) translateY(2px)}
+
+/* ══════════════ MENU ══════════════ */
+#screen-menu{justify-content:center;gap:18px}
+.menu-emoji-row{font-size:32px;letter-spacing:4px;animation:sway 3s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.menu-title{font-size:clamp(24px,7.5vw,42px);font-weight:900;text-align:center;line-height:1.15}
+.menu-title .L{display:inline-block;animation:bobble 1.2s infinite alternate}
+.menu-title .L:nth-child(1){color:var(–primary);animation-delay:.00s}
+.menu-title .L:nth-child(2){color:var(–yellow); animation-delay:.08s}
+.menu-title .L:nth-child(3){color:var(–green);  animation-delay:.16s}
+.menu-title .L:nth-child(4){color:var(–blue);   animation-delay:.24s}
+.menu-title .L:nth-child(5){color:var(–purple); animation-delay:.32s}
+.menu-title .L:nth-child(6){color:var(–primary);animation-delay:.40s}
+.menu-title .L:nth-child(7){color:var(–yellow); animation-delay:.48s}
+@keyframes bobble{from{transform:translateY(0)}to{transform:translateY(-7px)}}
+.menu-sub{font-size:13px;color:#888;font-weight:700;letter-spacing:1px;text-align:center}
+.btn-mute{padding:10px 18px;font-size:18px;background:var(–yellow);color:var(–text);box-shadow:0 4px 0 #c8a800}
+.btn-mute.muted{background:#e0e0e0;box-shadow:0 4px 0 #aaa}
+.btn-start{padding:16px 46px;font-size:22px;background:var(–primary);color:white;box-shadow:0 6px 0 #cc4444;letter-spacing:1px}
+.btn-start:active{box-shadow:0 2px 0 #cc4444;transform:translateY(4px) scale(.97)}
+.menu-howto{
+background:white;border-radius:16px;padding:14px 18px;
+font-size:13px;line-height:1.7;color:#555;font-weight:600;
+box-shadow:0 2px 10px var(–shadow);width:100%;max-width:340px;
+}
+.menu-howto b{color:var(–primary)}
+
+/* ══════════════ GAME HEADER ══════════════ */
+#screen-game{justify-content:flex-start;gap:7px}
+.game-header{width:100%;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.btn-back{padding:8px 14px;font-size:16px;background:white;color:var(–text);border:2px solid #ddd;box-shadow:0 3px 0 #ddd}
+.hdr-center{display:flex;flex-direction:column;align-items:center;gap:2px}
+.match-counter{font-size:18px;font-weight:900;color:var(–primary)}
+.match-label{font-size:10px;color:#aaa;font-weight:700;text-transform:uppercase;letter-spacing:1px}
+
+/* ══════════════ HP BAR ══════════════ */
+/* ════ ARCADE FIGHTER HP BAR ════ */
+.hp-section{width:100%;display:flex;flex-direction:column;gap:4px}
+
+/* Label row: dark pill badges like arcade UI */
+.hp-top-row{width:100%;display:flex;align-items:center;justify-content:space-between;padding:0 1px}
+.hp-label{
+font-size:10px;font-weight:900;color:#eee;letter-spacing:2px;text-transform:uppercase;
+background:#222;padding:2px 7px;border-radius:4px;
+border:2px solid #000;box-shadow:0 2px 0 #000;
+}
+.hp-number{
+font-size:13px;font-weight:900;color:#fff;letter-spacing:1px;
+background:#222;padding:2px 9px;border-radius:4px;
+border:2px solid #000;box-shadow:0 2px 0 #000;
+font-variant-numeric:tabular-nums;
+}
+
+/* Hearts row — hidden, replaced by arcade bar */
+.hearts-row{display:none}
+.heart{display:none}
+
+/* Outer bezel — thick chunky arcade border */
+.hp-bar-wrap{
+width:100%;
+background:#000;
+border:3px solid #111;
+border-radius:5px;
+padding:3px;
+box-shadow:
+0 0 0 1px #666,
+0 4px 0 #000,
+inset 0 1px 3px rgba(0,0,0,.8);
+position:relative;
+}
+/* Inner dark track */
+.hp-bar-track{
+width:100%;height:20px;
+background:#1c0000;
+border-radius:2px;
+overflow:hidden;
+position:relative;
+/* faint inner shadow to look sunken */
+box-shadow:inset 0 2px 5px rgba(0,0,0,.7);
+}
+/* The fill bar itself */
+.hp-bar-fill{
+height:100%;
+width:100%;
+transition:width .3s ease, filter .3s ease;
+position:relative;
+/* Segmented: colour gradient + dark divider lines every 10% */
+background-color:#00e676;
+background-image:
+linear-gradient(180deg, rgba(255,255,255,.22) 0%, transparent 50%, rgba(0,0,0,.15) 100%),
+repeating-linear-gradient(
+90deg,
+transparent 0px, transparent calc(10% - 2px),
+rgba(0,0,0,.5) calc(10% - 2px), rgba(0,0,0,.5) 10%
+);
+}
+/* Scanline overlay */
+.hp-bar-fill::after{
+content:’’;position:absolute;inset:0;
+background:repeating-linear-gradient(
+180deg,
+rgba(255,255,255,.1) 0px, rgba(255,255,255,.1) 1px,
+transparent 1px, transparent 3px
+);
+}
+/* Bright top shine */
+.hp-bar-fill::before{
+content:’’;position:absolute;
+top:1px;left:2px;right:2px;height:4px;
+background:rgba(255,255,255,.4);
+border-radius:2px;
+}
+
+/* Colour states */
+.hp-bar-fill.high{ background-color:#00e676; }
+.hp-bar-fill.med{
+background-color:#ffd600;
+animation:hp-med-flicker 1.4s ease-in-out infinite alternate;
+}
+.hp-bar-fill.low{
+background-color:#ff1744;
+animation:hp-low-flicker .55s ease-in-out infinite alternate;
+}
+@keyframes hp-med-flicker{from{filter:brightness(1)}to{filter:brightness(1.18)}}
+@keyframes hp-low-flicker{from{filter:brightness(.85)}to{filter:brightness(1.35)}}
+
+/* ── Screen flash on damage ── */
+.damage-flash{
+position:fixed;inset:0;background:rgba(255,50,50,.28);
+pointer-events:none;z-index:999;opacity:0;
+transition:opacity .08s ease;
+}
+.damage-flash.active{opacity:1}
+
+/* ══════════════ STREAK / STATUS ══════════════ */
+.status-row{
+width:100%;display:flex;align-items:center;justify-content:space-between;
+padding:0 2px;min-height:26px;
+}
+.streak-display{
+display:flex;align-items:center;gap:4px;
+font-size:13px;font-weight:800;color:var(–orange);
+transition:opacity .2s;
+}
+.streak-display.hidden{opacity:0}
+.streak-flames{font-size:16px;letter-spacing:-2px}
+.streak-text{font-size:12px}
+
+.shield-badge{
+background:linear-gradient(135deg,var(–blue),var(–purple));
+color:white;padding:4px 10px;border-radius:20px;
+font-size:11px;font-weight:800;letter-spacing:.5px;
+display:none;animation:shield-glow 1.5s ease-in-out infinite alternate;
+}
+.shield-badge.active{display:block}
+@keyframes shield-glow{
+from{box-shadow:0 0 6px rgba(77,150,255,.4)}
+to{box-shadow:0 0 14px rgba(77,150,255,.8)}
+}
+
+/* Float-up delta text */
+.hp-delta{
+position:fixed;font-size:22px;font-weight:900;pointer-events:none;
+z-index:1000;animation:float-up .9s ease forwards;
+text-shadow:0 2px 6px rgba(0,0,0,.18);
+}
+@keyframes float-up{
+0%{opacity:1;transform:translateY(0) scale(1)}
+60%{opacity:1;transform:translateY(-40px) scale(1.1)}
+100%{opacity:0;transform:translateY(-70px) scale(.8)}
+}
+
+/* ══════════════ PROGRESS ══════════════ */
+/* ════ PROGRESS BAR ════ */
+.progress-section{width:100%;display:flex;flex-direction:column;gap:3px}
+.progress-label-row{display:flex;align-items:center;justify-content:space-between;padding:0 2px}
+.progress-label{font-size:10px;font-weight:800;color:#aaa;letter-spacing:1.5px;text-transform:uppercase}
+.progress-count{font-size:11px;font-weight:900;color:var(–blue)}
+
+.progress-wrap{
+width:100%;height:16px;
+background:#e8e8e8;
+border-radius:20px;
+border:2px solid #d0d0d0;
+box-shadow:inset 0 2px 5px rgba(0,0,0,.1);
+overflow:hidden;
+position:relative;
+}
+.progress-fill{
+height:100%;width:0%;
+background:linear-gradient(90deg,#4d96ff,#c77dff);
+border-radius:20px;
+transition:width .5s cubic-bezier(.4,0,.2,1);
+position:relative;
+}
+/* Glossy top shine */
+.progress-fill::after{
+content:’’;position:absolute;
+top:2px;left:6px;right:6px;height:5px;
+background:rgba(255,255,255,.55);
+border-radius:10px;
+}
+
+/* Milestone dots beneath the bar */
+.progress-milestones{
+display:flex;justify-content:space-between;
+padding:0 6px;
+}
+.prog-dot{
+width:7px;height:7px;border-radius:50%;
+background:#ddd;border:2px solid #fff;
+box-shadow:0 1px 2px rgba(0,0,0,.15);
+transition:background .35s,transform .3s;
+}
+.prog-dot.passed{
+background:var(–purple);
+box-shadow:0 0 5px rgba(199,125,255,.7);
+animation:dot-pop .35s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes dot-pop{from{transform:scale(0)}to{transform:scale(1)}}
+
+.match-icons{display:flex;gap:3px;flex-wrap:wrap;justify-content:center}
+.match-icon{font-size:20px;opacity:.2;transition:opacity .4s,transform .4s}
+.match-icon.lit{opacity:1;animation:pop .45s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* ══════════════ CARD GRID ══════════════ */
+.card-grid{
+display:grid;grid-template-columns:repeat(4,var(–card-sz));
+gap:var(–gap);justify-content:center;
+}
+.card{width:var(–card-sz);height:var(–card-sz);perspective:600px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.card.matched{pointer-events:none}
+.card.locked{pointer-events:none;cursor:default}
+.card.hint-pulse .card-inner{animation:hint-pulse .65s ease-in-out 2}
+@keyframes hint-pulse{0%,100%{transform:rotateY(0) scale(1)}50%{transform:rotateY(0) scale(1.1)}}
+.card-inner{
+width:100%;height:100%;position:relative;transform-style:preserve-3d;
+border-radius:var(–r-card);transition:transform .45s cubic-bezier(.4,0,.2,1);
+}
+.card-inner.flipped{transform:rotateY(180deg)}
+.card-face{
+position:absolute;inset:0;border-radius:var(–r-card);
+backface-visibility:hidden;-webkit-backface-visibility:hidden;
+display:flex;align-items:center;justify-content:center;
+box-shadow:0 4px 12px var(–shadow);user-select:none;
+}
+.card-back{
+background:var(–primary);
+background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.07) 0,rgba(255,255,255,.07) 2px,transparent 2px,transparent 10px);
+font-size:calc(var(–card-sz)*.44);
+}
+.card-front{background:white;transform:rotateY(180deg);border:3px solid #f0f0f0}
+.card-front.is-emoji{font-size:calc(var(–card-sz)*.52)}
+.card-front.is-hiragana{font-size:calc(var(–card-sz)*.25);font-weight:900;color:var(–text);letter-spacing:1px;text-align:center;padding:4px}
+.card.matched .card-front{background:#d4f8d4;border-color:var(–green)}
+.card.shake .card-inner{animation:shake .42s ease}
+@keyframes shake{0%,100%{transform:rotateY(180deg) translateX(0)}25%{transform:rotateY(180deg) translateX(-7px)}75%{transform:rotateY(180deg) translateX(7px)}}
+
+/* ══════════════ QUIZ PANEL ══════════════ */
+.quiz-panel{
+width:100%;display:flex;flex-direction:column;align-items:center;gap:8px;
+opacity:0;transform:translateY(14px);
+transition:opacity .22s ease,transform .22s ease;
+pointer-events:none;
+}
+.quiz-panel.visible{opacity:1;transform:translateY(0);pointer-events:auto}
+.quiz-prompt{font-size:14px;font-weight:800;color:#777;text-align:center;letter-spacing:.5px}
+.quiz-choices{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-choice{
+padding:15px 26px;font-size:20px;font-weight:900;
+background:white;color:var(–text);
+border:3px solid #ddd;box-shadow:0 5px 0 #ccc;border-radius:16px;
+min-width:118px;text-align:center;
+transition:transform .12s,box-shadow .12s,background .15s,border-color .15s;
+}
+.btn-choice:active{transform:translateY(4px) scale(.95);box-shadow:0 1px 0 #ccc}
+.btn-choice:disabled{cursor:default}
+.btn-choice.correct{background:#d4f8d4;border-color:var(–green);box-shadow:0 5px 0 #45a355;animation:bounce-correct .38s cubic-bezier(.34,1.56,.64,1)}
+.btn-choice.wrong{background:#ffd6d6;border-color:var(–primary);box-shadow:0 5px 0 #cc4444;animation:wobble-wrong .38s ease}
+@keyframes bounce-correct{0%{transform:scale(1)}50%{transform:scale(1.13)}100%{transform:scale(1)}}
+@keyframes wobble-wrong{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+/* One-chance: after answer both buttons locked */
+.quiz-panel.answered .btn-choice{pointer-events:none}
+
+/* ══════════════ WIN SCREEN ══════════════ */
+#screen-win{justify-content:center;gap:16px;text-align:center}
+.win-title{font-size:clamp(36px,11vw,64px);font-weight:900;color:var(–primary);animation:wiggle .5s ease infinite alternate}
+@keyframes wiggle{from{transform:rotate(-3deg)}to{transform:rotate(3deg)}}
+.win-emoji-row{font-size:36px;letter-spacing:8px;animation:sway 2s ease-in-out infinite}
+.win-sub{font-size:18px;color:var(–text);font-weight:700}
+.stars-row{display:flex;gap:8px;justify-content:center;font-size:44px}
+.star{opacity:.2;transition:opacity .4s,transform .4s;display:inline-block}
+.star.lit{opacity:1;animation:star-pop .5s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes star-pop{from{transform:scale(0) rotate(-30deg)}to{transform:scale(1) rotate(0)}}
+.win-stats{
+background:white;border-radius:16px;padding:14px 20px;
+box-shadow:0 4px 14px var(–shadow);font-size:14px;
+display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;
+text-align:left;width:100%;max-width:300px;
+}
+.stat-item{display:flex;flex-direction:column;gap:1px}
+.stat-label{font-size:10px;color:#aaa;font-weight:700;text-transform:uppercase;letter-spacing:1px}
+.stat-val{font-size:18px;font-weight:900;color:var(–text)}
+.stat-val.good{color:var(–green)}
+.stat-val.bad{color:var(–primary)}
+.btn-retry{padding:14px 36px;font-size:18px;background:var(–green);color:white;box-shadow:0 5px 0 #45a355}
+.btn-menu-win{padding:12px 32px;font-size:16px;background:white;color:var(–text);border:2px solid #ddd;box-shadow:0 4px 0 #ddd}
+
+/* ══════════════ GAME OVER SCREEN ══════════════ */
+#screen-over{justify-content:center;gap:16px;text-align:center}
+.over-title{font-size:clamp(32px,10vw,58px);font-weight:900;color:var(–primary);animation:shake-title .6s ease infinite alternate}
+@keyframes shake-title{from{transform:rotate(-2deg)}to{transform:rotate(2deg)}}
+.over-sub{font-size:17px;color:#555;font-weight:700}
+.over-stats{
+background:white;border-radius:16px;padding:14px 20px;
+box-shadow:0 4px 14px var(–shadow);font-size:14px;
+display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;
+text-align:left;width:100%;max-width:300px;
+}
+.btn-tryagain{padding:14px 36px;font-size:18px;background:var(–primary);color:white;box-shadow:0 5px 0 #cc4444}
+.btn-tryagain:active{box-shadow:0 2px 0 #cc4444;transform:translateY(3px) scale(.97)}
+.btn-menu-over{padding:12px 32px;font-size:16px;background:white;color:var(–text);border:2px solid #ddd;box-shadow:0 4px 0 #ddd}
+
+/* ══════════════ UTILS ══════════════ */
+.hidden{display:none!important}
+@media(max-width:380px){:root{–card-sz:min(21vw,76px)}}
+@media(min-width:480px){:root{–card-sz:100px;–gap:10px}}
+</style>
+
+</head>
+<body>
+
+<!-- damage flash overlay -->
+
+<div class="damage-flash" id="damage-flash"></div>
+
+<!-- ═══════════ MENU ═══════════ -->
+
+<div id="screen-menu" class="screen active">
+  <div class="menu-emoji-row">🍎🍌🍒🍇🍋🍈🍑🍓</div>
+  <div class="menu-title">
+    <span class="L">E</span><span class="L">n</span><span class="L">g</span><span class="L">l</span><span class="L">i</span><span class="L">s</span><span class="L">h</span>
+    <br>🍎 Fruit Memory!
+  </div>
+  <div class="menu-sub">えいごフルーツ めもりー RPG</div>
+  <div class="menu-howto">
+    <b>❤️ HP</b> を守りながら全ペアをマッチしよう！<br>
+    🃏 カードをタップ → えいごを選ぶ（1かいだけ！）<br>
+    ✅ 正解でHP回復 · ❌ まちがいでダメージ<br>
+    🔥 れんぞく正解でボーナス回復！<br>
+    💔 HP0でゲームオーバー
+  </div>
+  <button class="btn btn-mute" id="btn-mute-menu" onclick="Controller.toggleMute()">🔊 おと ON</button>
+  <button class="btn btn-start" onclick="Controller.startGame()">▶ スタート！</button>
+</div>
+
+<!-- ═══════════ GAME ═══════════ -->
+
+<div id="screen-game" class="screen">
+  <div class="game-header">
+    <button class="btn btn-back" onclick="Controller.goToMenu()">← メニュー</button>
+    <div class="hdr-center">
+      <div class="match-counter" id="match-counter">0 / 8</div>
+      <div class="match-label">マッチ</div>
+    </div>
+    <button class="btn btn-mute" id="btn-mute-game" onclick="Controller.toggleMute()">🔊</button>
+  </div>
+
+  <!-- HP display -->
+
+  <div class="hp-section">
+    <div class="hp-top-row">
+      <div class="hp-label">❤️ HP</div>
+      <div class="hp-number" id="hp-number">100</div>
+    </div>
+    <div class="hearts-row" id="hearts-row"></div>
+    <div class="hp-bar-wrap">
+      <div class="hp-bar-track">
+        <div class="hp-bar-fill high" id="hp-bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- streak + shield row -->
+
+  <div class="status-row">
+    <div class="streak-display hidden" id="streak-display">
+      <span class="streak-flames" id="streak-flames">🔥</span>
+      <span class="streak-text" id="streak-text">x1 Streak!</span>
+    </div>
+    <div class="shield-badge" id="shield-badge">🛡️ SHIELD</div>
+  </div>
+
+  <div class="progress-section">
+    <div class="progress-label-row">
+      <span class="progress-label">✨ Pairs Found</span>
+      <span class="progress-count" id="progress-count">0 / 8</span>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-milestones" id="progress-milestones"></div>
+  </div>
+  <div class="match-icons" id="match-icons"></div>
+
+  <div class="card-grid" id="card-grid" role="grid"></div>
+
+  <div class="quiz-panel" id="quiz-panel">
+    <div class="quiz-prompt">えいごでなんていう？ 👇 （1かいだけ！）</div>
+    <div class="quiz-choices">
+      <button class="btn btn-choice" id="choice-a" onclick="Controller.handleChoice('a')"></button>
+      <button class="btn btn-choice" id="choice-b" onclick="Controller.handleChoice('b')"></button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ WIN ═══════════ -->
+
+<div id="screen-win" class="screen">
+  <div class="win-title">やったね！🎉</div>
+  <div class="win-emoji-row">🍎🍌🍒🍇🍋🍈🍑🍓</div>
+  <div class="win-sub" id="win-sub">全部みつけた！ Great job!</div>
+  <div class="stars-row" id="stars-row">
+    <span class="star" id="star1">⭐</span>
+    <span class="star" id="star2">⭐</span>
+    <span class="star" id="star3">⭐</span>
+  </div>
+  <div class="win-stats" id="win-stats"></div>
+  <button class="btn btn-retry"    onclick="Controller.startGame()">🔄 もういちど</button>
+  <button class="btn btn-menu-win" onclick="Controller.goToMenu()">🏠 メニューへ</button>
+</div>
+
+<!-- ═══════════ GAME OVER ═══════════ -->
+
+<div id="screen-over" class="screen">
+  <div style="font-size:64px">💀</div>
+  <div class="over-title">ゲームオーバー</div>
+  <div class="over-sub" id="over-sub">HPが0になったよ… またチャレンジ！</div>
+  <div class="over-stats" id="over-stats"></div>
+  <button class="btn btn-tryagain"  onclick="Controller.startGame()">🔄 もういちど！</button>
+  <button class="btn btn-menu-over" onclick="Controller.goToMenu()">🏠 メニューへ</button>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   CONSTANTS — tweak here to rebalance difficulty
+═══════════════════════════════════════════════ */
+const TOTAL_PAIRS        = 8;
+const MAX_HP             = 100;
+const HEARTS             = 10;           // visual hearts (each = 10 HP)
+
+// Damage
+const DMG_WRONG          = [12, 18, 25]; // [streak1, streak2, streak3+]
+const DMG_MISMATCH       = 8;
+
+// Healing
+const HEAL_CORRECT       = [3, 5, 8, 12];// [streak1, streak2, streak3, streak5+]
+const HEAL_MATCH_BONUS   = 5;            // extra HP for completing a pair
+
+// Timings (ms)
+const ANIM_CHOICE        = 480;          // how long correct/wrong btn animation shows
+const MISMATCH_SHOW_MS   = 1100;
+const MATCH_CELEBRATE_MS = 900;
+
+/* ═══════════════════════════════════════════════
+   FRUIT DATA
+═══════════════════════════════════════════════ */
+const FRUITS = [
+  {id:'apple',      english:'apple',      hiragana:'りんご',   emoji:'🍎'},
+  {id:'banana',     english:'banana',     hiragana:'ばなな',   emoji:'🍌'},
+  {id:'cherry',     english:'cherry',     hiragana:'ちぇりー', emoji:'🍒'},
+  {id:'grape',      english:'grape',      hiragana:'ぶどう',   emoji:'🍇'},
+  {id:'lemon',      english:'lemon',      hiragana:'れもん',   emoji:'🍋'},
+  {id:'melon',      english:'melon',      hiragana:'めろん',   emoji:'🍈'},
+  {id:'peach',      english:'peach',      hiragana:'もも',     emoji:'🍑'},
+  {id:'strawberry', english:'strawberry', hiragana:'いちご',   emoji:'🍓'},
+];
+
+/* ═══════════════════════════════════════════════
+   UTILITIES
+═══════════════════════════════════════════════ */
+function buildShuffledCards() {
+  const deck = [];
+  FRUITS.forEach(f => {
+    deck.push({id:f.id, type:'emoji',    matched:false});
+    deck.push({id:f.id, type:'hiragana', matched:false});
+  });
+  for (let i = deck.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [deck[i],deck[j]] = [deck[j],deck[i]];
+  }
+  return deck.map((c,i) => ({...c, index:i}));
+}
+
+function getFruitById(id) { return FRUITS.find(f => f.id === id); }
+
+function randomOtherEnglish(excludeId) {
+  const others = FRUITS.filter(f => f.id !== excludeId);
+  return others[Math.floor(Math.random()*others.length)].english;
+}
+
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+/* ═══════════════════════════════════════════════
+   MODEL
+═══════════════════════════════════════════════ */
+const Model = (() => {
+  let muted          = false;
+  let cards          = [];
+  let flipped        = [];
+  let matched        = 0;
+  let hp             = MAX_HP;
+  let correctStreak  = 0;  // consecutive correct word answers
+  let wrongStreak    = 0;  // consecutive wrong word answers (resets on correct)
+  let shieldActive   = false;
+  let lastWordCorrect= false; // was the most recent card's word answered correctly?
+  let stats = {wordsRight:0, wordsWrong:0, mismatches:0, bestStreak:0, pairsMatched:0};
+  let locked         = false;
+
+  return {
+    init() {
+      cards         = buildShuffledCards();
+      flipped       = [];
+      matched       = 0;
+      hp            = MAX_HP;
+      correctStreak = 0;
+      wrongStreak   = 0;
+      shieldActive  = false;
+      lastWordCorrect=false;
+      locked        = false;
+      stats         = {wordsRight:0,wordsWrong:0,mismatches:0,bestStreak:0,pairsMatched:0};
+    },
+    isMuted()          { return muted; },
+    toggleMute()       { muted = !muted; return muted; },
+    getCards()         { return cards; },
+    getFlipped()       { return flipped; },
+    getMatched()       { return matched; },
+    getHP()            { return hp; },
+    getCorrectStreak() { return correctStreak; },
+    getWrongStreak()   { return wrongStreak; },
+    hasShield()        { return shieldActive; },
+    isLocked()         { return locked; },
+    setLocked(v)       { locked = v; },
+    getStats()         { return {...stats}; },
+    flipCard(i)        { if(!flipped.includes(i)) flipped.push(i); },
+    clearFlipped()     { flipped = []; },
+    markMatched(a,b)   { cards[a].matched=true; cards[b].matched=true; },
+    isAllMatched()     { return matched >= TOTAL_PAIRS; },
+
+    /** Call when player answers a word correctly. Returns heal amount. */
+    onWordCorrect() {
+      wrongStreak   = 0;
+      correctStreak++;
+      lastWordCorrect = true;
+      stats.wordsRight++;
+      if (correctStreak > stats.bestStreak) stats.bestStreak = correctStreak;
+      // Healing: streak 1→3, 2→5, 3-4→8, 5+→12
+      const idx   = correctStreak >= 5 ? 3 : Math.min(correctStreak-1, 2);
+      const heal  = HEAL_CORRECT[idx];
+      hp = clamp(hp + heal, 0, MAX_HP);
+      return heal;
+    },
+
+    /** Call when player answers a word wrongly. Returns damage dealt. */
+    onWordWrong() {
+      correctStreak   = 0;
+      wrongStreak++;
+      lastWordCorrect = false;
+      stats.wordsWrong++;
+      const idx  = Math.min(wrongStreak-1, 2);
+      const dmg  = DMG_WRONG[idx];
+      hp = clamp(hp - dmg, 0, MAX_HP);
+      return dmg;
+    },
+
+    /** Call when a pair matches. Returns heal if lastWordCorrect → grants shield. */
+    onPairMatch() {
+      matched++;
+      stats.pairsMatched++;
+      hp = clamp(hp + HEAL_MATCH_BONUS, 0, MAX_HP);
+      // Shield: earned when both word was correct AND pair matched
+      if (lastWordCorrect) shieldActive = true;
+      lastWordCorrect = false;
+      return HEAL_MATCH_BONUS;
+    },
+
+    /** Call on mismatch. Returns damage (0 if shield absorbed it). */
+    onMismatch() {
+      stats.mismatches++;
+      lastWordCorrect = false;
+      if (shieldActive) {
+        shieldActive = false;
+        return 0;         // shield absorbs damage
+      }
+      const dmg = DMG_MISMATCH;
+      hp = clamp(hp - dmg, 0, MAX_HP);
+      return dmg;
+    },
+  };
+})();
+
+/* ═══════════════════════════════════════════════
+   AUDIO
+═══════════════════════════════════════════════ */
+const GameAudio = (() => {
+  let ctx = null;
+  function getCtx() {
+    try {
+      if (!ctx) ctx = new (window.AudioContext||window.webkitAudioContext)();
+      if (ctx.state==='suspended') ctx.resume();
+      return ctx;
+    } catch(_){return null;}
+  }
+  function tone(freq, dur, wave='sine', vol=0.35) {
+    if (Model.isMuted()) return;
+    const c = getCtx(); if(!c) return;
+    try {
+      const osc=c.createOscillator(), gain=c.createGain();
+      osc.connect(gain); gain.connect(c.destination);
+      osc.frequency.value=freq; osc.type=wave;
+      gain.gain.setValueAtTime(vol, c.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime+dur);
+      osc.start(c.currentTime); osc.stop(c.currentTime+dur);
+    } catch(_){}
+  }
+  function playCorrect() { tone(1040,.28); }
+  function playWrong()   { tone(200,.22,'sawtooth',.17); }
+  function playMatch()   { tone(880,.32); setTimeout(()=>tone(1320,.22),160); }
+  function playShield()  { tone(660,.18); setTimeout(()=>tone(880,.18),120); }
+  function playGameOver(){ tone(220,.4,'sawtooth',.2); setTimeout(()=>tone(165,.6,'sawtooth',.18),300); }
+  return { playCorrect, playWrong, playMatch, playShield, playGameOver };
+})();
+
+/* ═══════════════════════════════════════════════
+   CONFETTI
+═══════════════════════════════════════════════ */
+function burstConfetti() {
+  if (typeof confetti==='undefined') return;
+  confetti({particleCount:70,spread:75,origin:{y:.58}});
+}
+function winConfetti() {
+  if (typeof confetti==='undefined') return;
+  const end=Date.now()+2800;
+  const colors=['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#c77dff'];
+  (function frame(){
+    confetti({particleCount:5,angle:60, spread:52,origin:{x:0},colors});
+    confetti({particleCount:5,angle:120,spread:52,origin:{x:1},colors});
+    if(Date.now()<end) requestAnimationFrame(frame);
+  })();
+}
+
+/* ═══════════════════════════════════════════════
+   VIEW
+═══════════════════════════════════════════════ */
+const View = (() => {
+  const screens = {
+    menu: document.getElementById('screen-menu'),
+    game: document.getElementById('screen-game'),
+    win:  document.getElementById('screen-win'),
+    over: document.getElementById('screen-over'),
+  };
+
+  function showScreen(name) {
+    Object.entries(screens).forEach(([k,el])=>el.classList.toggle('active',k===name));
+  }
+
+  function updateMuteButtons(muted) {
+    document.getElementById('btn-mute-menu').textContent = muted?'🔇 おと OFF':'🔊 おと ON';
+    document.getElementById('btn-mute-game').textContent = muted?'🔇':'🔊';
+    document.getElementById('btn-mute-menu').classList.toggle('muted',muted);
+    document.getElementById('btn-mute-game').classList.toggle('muted',muted);
+  }
+
+  /** Render 10 hearts based on current HP */
+  function updateHP(hp) {
+    const pct = hp / MAX_HP;
+    // hearts
+    const row = document.getElementById('hearts-row');
+    row.innerHTML = '';
+    for (let i=0; i<HEARTS; i++) {
+      const span = document.createElement('span');
+      span.className = 'heart' + (i < Math.ceil(pct*HEARTS) ? '' : ' lost');
+      span.textContent = '❤️';
+      row.appendChild(span);
+    }
+    // number
+    document.getElementById('hp-number').textContent = Math.max(0,Math.round(hp));
+    // bar
+    const bar = document.getElementById('hp-bar');
+    bar.style.width = (pct*100) + '%';
+    bar.className = 'hp-bar-fill ' + (pct>0.6?'high':pct>0.3?'med':'low');
+  }
+
+  /** Flash damage overlay */
+  function flashDamage() {
+    const el = document.getElementById('damage-flash');
+    el.classList.add('active');
+    setTimeout(()=>el.classList.remove('active'), 180);
+  }
+
+  /** Show a floating HP delta near the centre of the screen */
+  function showHPDelta(amount, isHeal) {
+    const el = document.createElement('div');
+    el.className = 'hp-delta';
+    el.textContent = (isHeal ? '+' : '-') + Math.abs(amount) + ' HP';
+    el.style.color = isHeal ? '#6bcb77' : '#ff4444';
+    el.style.left  = '50%';
+    el.style.top   = '38%';
+    el.style.transform = 'translateX(-50%)';
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), 950);
+  }
+
+  /** Pulse one heart to show healing */
+  function pulseHeart(index) {
+    const hearts = document.getElementById('hearts-row').children;
+    if (hearts[index]) {
+      hearts[index].classList.add('pulse');
+      setTimeout(()=>hearts[index].classList.remove('pulse'),320);
+    }
+  }
+
+  /** Update the streak flames display */
+  function updateStreak(streak) {
+    const disp = document.getElementById('streak-display');
+    if (streak < 2) { disp.classList.add('hidden'); return; }
+    disp.classList.remove('hidden');
+    const flameCount = Math.min(streak, 5);
+    document.getElementById('streak-flames').textContent = '🔥'.repeat(flameCount);
+    document.getElementById('streak-text').textContent = `x${streak} Streak!`;
+  }
+
+  function updateShield(active) {
+    document.getElementById('shield-badge').classList.toggle('active', active);
+  }
+
+  function updateMatchCounter(n) {
+    document.getElementById('match-counter').textContent = `${n} / ${TOTAL_PAIRS}`;
+  }
+
+  function renderCards(cards) {
+    const grid = document.getElementById('card-grid');
+    grid.innerHTML='';
+    cards.forEach(card=>grid.appendChild(buildCardEl(card)));
+  }
+
+  function buildCardEl(card) {
+    const fruit=getFruitById(card.id);
+    const wrap=document.createElement('div');
+    wrap.className='card'; wrap.dataset.index=String(card.index);
+    wrap.setAttribute('role','gridcell'); wrap.setAttribute('tabindex','0');
+    const inner=document.createElement('div'); inner.className='card-inner';
+    const back=document.createElement('div'); back.className='card-face card-back'; back.textContent='🌟';
+    const front=document.createElement('div');
+    front.className='card-face card-front '+(card.type==='emoji'?'is-emoji':'is-hiragana');
+    front.textContent=card.type==='emoji'?fruit.emoji:fruit.hiragana;
+    inner.appendChild(back); inner.appendChild(front); wrap.appendChild(inner);
+    wrap.addEventListener('click',()=>Controller.handleCardTap(card.index));
+    wrap.addEventListener('keydown',(e)=>{if(e.key==='Enter'||e.key===' ')Controller.handleCardTap(card.index)});
+    return wrap;
+  }
+
+  function setCardFlipped(index, faceUp) {
+    const inner=document.querySelector(`.card[data-index="${index}"] .card-inner`);
+    if(inner) inner.classList.toggle('flipped',faceUp);
+  }
+  function setCardMatched(index) { document.querySelector(`.card[data-index="${index}"]`)?.classList.add('matched'); }
+  function shakeCard(index) {
+    const card=document.querySelector(`.card[data-index="${index}"]`);
+    if(!card) return;
+    card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+    setTimeout(()=>card.classList.remove('shake'),450);
+  }
+  function pulseUnflippedCards() {
+    document.querySelectorAll('.card:not(.matched)').forEach(card=>{
+      const inner=card.querySelector('.card-inner');
+      if(!inner||inner.classList.contains('flipped')) return;
+      card.classList.remove('hint-pulse'); void card.offsetWidth;
+      card.classList.add('hint-pulse');
+      setTimeout(()=>card.classList.remove('hint-pulse'),1400);
+    });
+  }
+  function setGridLocked(lock) {
+    document.querySelectorAll('.card:not(.matched)').forEach(el=>el.classList.toggle('locked',lock));
+  }
+
+  function showQuiz(correctWord, wrongWord, swapped) {
+    const btnA=document.getElementById('choice-a'), btnB=document.getElementById('choice-b');
+    btnA.textContent=swapped?wrongWord:correctWord;   btnA.dataset.word=swapped?wrongWord:correctWord;
+    btnB.textContent=swapped?correctWord:wrongWord;   btnB.dataset.word=swapped?correctWord:wrongWord;
+    btnA.className='btn btn-choice'; btnB.className='btn btn-choice';
+    btnA.disabled=false; btnB.disabled=false;
+    const panel=document.getElementById('quiz-panel');
+    panel.classList.remove('answered');
+    panel.classList.add('visible');
+  }
+  function hideQuiz() { document.getElementById('quiz-panel').classList.remove('visible','answered'); }
+  function lockQuizAfterAnswer() { document.getElementById('quiz-panel').classList.add('answered'); }
+
+  function animateChoice(which, result, onDone) {
+    const btn=document.getElementById(`choice-${which}`);
+    const other=document.getElementById(which==='a'?'choice-b':'choice-a');
+    btn.className=`btn btn-choice ${result}`;
+    btn.disabled=true; other.disabled=true;
+    setTimeout(onDone, ANIM_CHOICE);
+  }
+
+  function updateProgress(matched) {
+    document.getElementById('progress-fill').style.width = (matched/TOTAL_PAIRS*100)+'%';
+    const countEl = document.getElementById('progress-count');
+    if (countEl) countEl.textContent = matched+' / '+TOTAL_PAIRS;
+    // Rebuild milestone dots
+    const mEl = document.getElementById('progress-milestones');
+    if (mEl) {
+      mEl.innerHTML = '';
+      for (let i = 1; i <= TOTAL_PAIRS; i++) {
+        const d = document.createElement('span');
+        d.className = 'prog-dot' + (i <= matched ? ' passed' : '');
+        mEl.appendChild(d);
+      }
+    }
+  }
+  function updateMatchIcons(matched) {
+    const row=document.getElementById('match-icons'); row.innerHTML='';
+    FRUITS.forEach((f,i)=>{
+      const span=document.createElement('span');
+      span.className='match-icon'+(i<matched?' lit':''); span.textContent=f.emoji; row.appendChild(span);
+    });
+  }
+
+  function renderWinScreen(hp, stats) {
+    // Stars
+    const starPct = hp / MAX_HP;
+    const starCount = starPct > 0.66 ? 3 : starPct > 0.33 ? 2 : 1;
+    ['star1','star2','star3'].forEach((id,i)=>{
+      const el=document.getElementById(id);
+      el.classList.remove('lit');
+      if(i<starCount) setTimeout(()=>el.classList.add('lit'),(i+1)*250);
+    });
+    document.getElementById('win-sub').textContent =
+      starCount===3 ? '完璧！ Perfect run! 🌟' :
+      starCount===2 ? '上手！ Well done! 👏' :
+                      '全部みつけた！ Great job! 🎉';
+    // Stats
+    const container=document.getElementById('win-stats');
+    container.innerHTML='';
+    const rows=[
+      ['残りHP','stat-val good', Math.round(hp)+' / '+MAX_HP],
+      ['正解ワード','stat-val good', stats.wordsRight],
+      ['まちがい','stat-val bad',  stats.wordsWrong],
+      ['ベストストリーク','stat-val', '🔥 '+stats.bestStreak],
+      ['ミスマッチ','stat-val bad', stats.mismatches],
+      ['ペア','stat-val good', stats.pairsMatched+' / '+TOTAL_PAIRS],
+    ];
+    rows.forEach(([label,cls,val])=>{
+      const div=document.createElement('div'); div.className='stat-item';
+      div.innerHTML=`<span class="stat-label">${label}</span><span class="${cls}">${val}</span>`;
+      container.appendChild(div);
+    });
+  }
+
+  function renderGameOverScreen(stats) {
+    const container=document.getElementById('over-stats');
+    container.innerHTML='';
+    const rows=[
+      ['正解ワード','stat-val good', stats.wordsRight],
+      ['まちがい','stat-val bad',  stats.wordsWrong],
+      ['ベストストリーク','stat-val', '🔥 '+stats.bestStreak],
+      ['ミスマッチ','stat-val bad', stats.mismatches],
+      ['マッチできた','stat-val', stats.pairsMatched+' / '+TOTAL_PAIRS],
+    ];
+    rows.forEach(([label,cls,val])=>{
+      const div=document.createElement('div'); div.className='stat-item';
+      div.innerHTML=`<span class="stat-label">${label}</span><span class="${cls}">${val}</span>`;
+      container.appendChild(div);
+    });
+  }
+
+  return {
+    showScreen, updateMuteButtons,
+    updateHP, flashDamage, showHPDelta, pulseHeart,
+    updateStreak, updateShield, updateMatchCounter,
+    renderCards, setCardFlipped, setCardMatched, shakeCard,
+    pulseUnflippedCards, setGridLocked,
+    showQuiz, hideQuiz, lockQuizAfterAnswer, animateChoice,
+    updateProgress, updateMatchIcons,
+    renderWinScreen, renderGameOverScreen,
+  };
+})();
+
+/* ═══════════════════════════════════════════════
+   CONTROLLER
+═══════════════════════════════════════════════ */
+const Controller = (() => {
+  let pendingCardIndex   = null;
+  let pendingCorrectWord = null;
+  let quizAnswered       = false; // prevents double-tap after first answer
+
+  function toggleMute() { View.updateMuteButtons(Model.toggleMute()); }
+
+  function goToMenu() {
+    pendingCardIndex=null; pendingCorrectWord=null; quizAnswered=false;
+    View.hideQuiz();
+    View.showScreen('menu');
+  }
+
+  function startGame() {
+    Model.init();
+    pendingCardIndex=null; pendingCorrectWord=null; quizAnswered=false;
+    View.showScreen('game');
+    View.renderCards(Model.getCards());
+    View.updateHP(Model.getHP());
+    View.updateStreak(0);
+    View.updateShield(false);
+    View.updateMatchCounter(0);
+    View.updateProgress(0);
+    View.updateMatchIcons(0);
+    View.hideQuiz();
+    View.setGridLocked(false);
+    setTimeout(View.pulseUnflippedCards, 650);
+  }
+
+  function handleCardTap(index) {
+    if (Model.isLocked()) return;
+    const card=Model.getCards()[index];
+    if (card.matched) return;
+    if (Model.getFlipped().includes(index)) return;
+    if (Model.getFlipped().length>=2) return;
+
+    Model.flipCard(index);
+    View.setCardFlipped(index,true);
+    Model.setLocked(true);
+    View.setGridLocked(true);
+
+    pendingCardIndex   = index;
+    pendingCorrectWord = getFruitById(card.id).english;
+    quizAnswered       = false;
+
+    View.showQuiz(pendingCorrectWord, randomOtherEnglish(card.id), Math.random()<.5);
+  }
+
+  function handleChoice(which) {
+    if (pendingCardIndex===null || quizAnswered) return;
+    quizAnswered = true;                    // lock out further taps immediately
+    View.lockQuizAfterAnswer();
+
+    const word = document.getElementById(`choice-${which}`).dataset.word;
+    if (word===pendingCorrectWord) {
+      onCorrectChoice(which);
+    } else {
+      onWrongChoice(which);
+    }
+  }
+
+  function onCorrectChoice(which) {
+    const heal = Model.onWordCorrect();
+    GameAudio.playCorrect();
+    View.animateChoice(which,'correct',()=>{
+      View.hideQuiz();
+      View.showHPDelta(heal, true);
+      View.updateHP(Model.getHP());
+      View.updateStreak(Model.getCorrectStreak());
+      const captured=pendingCardIndex; pendingCardIndex=null; pendingCorrectWord=null;
+      proceedAfterQuiz(captured);
+    });
+  }
+
+  function onWrongChoice(which) {
+    const dmg = Model.onWordWrong();
+    GameAudio.playWrong();
+    View.flashDamage();
+    if (pendingCardIndex!==null) View.shakeCard(pendingCardIndex);
+    View.animateChoice(which,'wrong',()=>{
+      View.showHPDelta(dmg, false);
+      View.updateHP(Model.getHP());
+      View.updateStreak(0);
+      // after wrong answer: automatically proceed (no retry)
+      View.hideQuiz();
+      const captured=pendingCardIndex; pendingCardIndex=null; pendingCorrectWord=null;
+      if (Model.getHP()<=0) { triggerGameOver(); return; }
+      proceedAfterQuiz(captured);
+    });
+  }
+
+  function proceedAfterQuiz(index) {
+    const flipped=Model.getFlipped();
+    if (flipped.length===1) {
+      Model.setLocked(false);
+      View.setGridLocked(false);
+      setTimeout(View.pulseUnflippedCards,250);
+    } else if (flipped.length===2) {
+      evaluatePair(flipped[0],flipped[1]);
+    }
+  }
+
+  function evaluatePair(a,b) {
+    const cards=Model.getCards();
+    const isMatch=cards[a].id===cards[b].id && cards[a].type!==cards[b].type;
+    if (isMatch) { handleMatch(a,b); } else { handleMismatch(a,b); }
+  }
+
+  function handleMatch(a,b) {
+    const heal = Model.onPairMatch();
+    const hadPerfectTurn = Model.hasShield(); // shield just got granted → perfect turn
+    Model.markMatched(a,b);
+    Model.clearFlipped();
+    View.setCardMatched(a);
+    View.setCardMatched(b);
+    GameAudio.playMatch();
+    if (hadPerfectTurn) GameAudio.playShield();
+    burstConfetti();
+    View.showHPDelta(heal, true);
+    View.updateHP(Model.getHP());
+    View.updateShield(Model.hasShield());
+    const m=Model.getMatched();
+    View.updateMatchCounter(m);
+    View.updateProgress(m);
+    View.updateMatchIcons(m);
+
+    if (Model.isAllMatched()) {
+      setTimeout(triggerWin, 750);
+    } else {
+      setTimeout(()=>{
+        Model.setLocked(false);
+        View.setGridLocked(false);
+        setTimeout(View.pulseUnflippedCards,300);
+      }, MATCH_CELEBRATE_MS);
+    }
+  }
+
+  function handleMismatch(a,b) {
+    const dmg = Model.onMismatch();
+    const shieldBlocked = dmg===0;
+    View.shakeCard(a); View.shakeCard(b);
+    if (shieldBlocked) {
+      GameAudio.playShield();
+      View.updateShield(false);
+      View.showHPDelta(0, true); // show "shield!" effectively
+    } else {
+      GameAudio.playWrong();
+      View.flashDamage();
+      View.showHPDelta(dmg, false);
+    }
+    View.updateHP(Model.getHP());
+    setTimeout(()=>{
+      Model.clearFlipped();
+      View.setCardFlipped(a,false);
+      View.setCardFlipped(b,false);
+      if (Model.getHP()<=0) { triggerGameOver(); return; }
+      Model.setLocked(false);
+      View.setGridLocked(false);
+      setTimeout(View.pulseUnflippedCards,300);
+    }, MISMATCH_SHOW_MS);
+  }
+
+  function triggerWin() {
+    winConfetti();
+    View.renderWinScreen(Model.getHP(), Model.getStats());
+    View.showScreen('win');
+  }
+
+  function triggerGameOver() {
+    GameAudio.playGameOver();
+    View.renderGameOverScreen(Model.getStats());
+    View.showScreen('over');
+  }
+
+  return { toggleMute, goToMenu, startGame, handleCardTap, handleChoice };
+})();
+
+
+
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded',()=>{
+  View.updateMuteButtons(Model.isMuted());
+});
+</script>
+
+</body>
+</html>
